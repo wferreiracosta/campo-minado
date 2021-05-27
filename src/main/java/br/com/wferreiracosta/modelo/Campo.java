@@ -1,5 +1,6 @@
 package br.com.wferreiracosta.modelo;
 
+import br.com.wferreiracosta.excecao.ExplosaoException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,4 +45,33 @@ public class Campo {
         }
     }
 
+    void alternarMarcacao(){
+        if (!isAberto()) {
+            marcado = !marcado;
+        }
+    }
+
+    boolean abrir(){
+        if(!isAberto() && !isMarcado()){
+            setAberto(true);
+            if(isMinado()){
+                throw new ExplosaoException();
+            }
+
+            if(vizinhacaoSegura()){
+                vizinhos.forEach(v -> v.abrir());
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    boolean vizinhacaoSegura(){
+        return vizinhos.stream().noneMatch(v -> v.minado);
+    }
+
+    void minar(){
+        setMinado(true);
+    }
 }
