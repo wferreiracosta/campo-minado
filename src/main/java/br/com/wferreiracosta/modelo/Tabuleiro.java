@@ -1,5 +1,6 @@
 package br.com.wferreiracosta.modelo;
 
+import br.com.wferreiracosta.excecao.ExplosaoException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,10 +28,15 @@ public class Tabuleiro {
     }
 
     public void abrir(int linha, int coluna){
-        campos.parallelStream()
-                .filter(c -> c.getLinha() == linha && c.getColuna() == coluna)
-                .findFirst()
-                .ifPresent(c -> c.abrir());
+        try {
+            campos.parallelStream()
+                    .filter(c -> c.getLinha() == linha && c.getColuna() == coluna)
+                    .findFirst()
+                    .ifPresent(c -> c.abrir());
+        } catch (ExplosaoException e){
+            campos.forEach(c -> c.setAberto(true));
+            throw e;
+        }
     }
 
     public void altenarMarcacao(int linha, int coluna){
@@ -44,9 +50,9 @@ public class Tabuleiro {
         long minasArmadas = 0L;
         Predicate<Campo> minado = c -> c.isMinado();
         do {
-            minasArmadas = campos.stream().filter(minado).count();
             int aleatorio = (int) (Math.random() * campos.size());
             this.campos.get(aleatorio).minar();
+            minasArmadas = campos.stream().filter(minado).count();
         } while (minasArmadas < this.getMinas());
     }
 
